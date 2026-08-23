@@ -2,7 +2,7 @@
 
 The desk shares a box with the order book, the risk view and the analytics service, and
 reverse-proxies two upstreams under one origin at `desk.damianhoward.com`: the order book on the
-same box, and trading-system on the other. risk-engine is not a tab — the Risk tab was removed on
+same box, and position-ledger on the other. risk-engine is not a tab — the Risk tab was removed on
 2026-07-17 and it stays live standalone at `risk.damianhoward.com`.
 
 ## Automated deploy
@@ -32,7 +32,7 @@ Secrets: `DEPLOY_SSH_KEY` (the box-1 `oracle_orderbook` key), `DEPLOY_HOST`, `DE
    service does not touch it, deliberately: a bad Caddyfile takes every site on the box down at
    once, which should not be reachable as a side effect of shipping one service. The desk adds no
    publicly reachable port; it binds loopback and is served through the proxy.
-3. **Upstreams** — the loopback defaults cover the services sharing this box. trading-system is on
+3. **Upstreams** — the loopback defaults cover the services sharing this box. position-ledger is on
    the other box, and the desk reaches it over its ordinary public TLS hostname rather than across
    the private network. Both work; the public route was chosen because the private one costs a
    standing ingress rule between the two boxes, and an always-open path is a poor trade for saving

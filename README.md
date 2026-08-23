@@ -13,7 +13,7 @@ Live at **[desk.damianhoward.com](https://desk.damianhoward.com)**.
 ## What it is
 
 A composing gateway. The desk owns no domain logic: [`orderbook`](https://github.com/damianhoward/orderbook)
-and [`trading-system`](https://github.com/damianhoward/trading-system) stay standalone, independently
+and [`position-ledger`](https://github.com/damianhoward/position-ledger) stay standalone, independently
 deployed services. This module serves the shell UI and reverse-proxies each service under a tab
 prefix, so the browser talks to one origin while each backend runs untouched. The trading tab's
 risk numbers come from the [`risk-engine`](https://github.com/damianhoward/risk-engine) library,
@@ -24,7 +24,7 @@ Browser ──▶ desk.damianhoward.com
              ├─ /                     shell: topbar + tab bar + status
              ├─ /trading.js           the Trading tab's renderer, served here
              ├─ /orderbook/**  ─▶  order book service   (live book, SSE — embedded whole)
-             └─ /trading/**    ─▶  trading-system        (JSON + SSE — drawn by the desk)
+             └─ /trading/**    ─▶  position-ledger        (JSON + SSE — drawn by the desk)
 ```
 
 The two tabs reach their services differently, because the services are different. The order book
