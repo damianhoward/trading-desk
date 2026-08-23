@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/damianhoward/trading-desk/graph/badge.svg)](https://codecov.io/gh/damianhoward/trading-desk)
 
 One trading workspace over two services. The desk presents the live order book and the trading
-dashboard — positions, risk, and PnL off the fill stream — as tabs in a single browser page:
+screen — positions, risk, and PnL off the fill stream — as tabs in a single browser page:
 one chrome, one status bar, one origin.
 
 Live at **[desk.damianhoward.com](https://desk.damianhoward.com)**.
@@ -22,20 +22,28 @@ which also runs standalone at [risk.damianhoward.com](https://risk.damianhoward.
 ```
 Browser ──▶ desk.damianhoward.com
              ├─ /                     shell: topbar + tab bar + status
-             ├─ /orderbook/**  ─▶  order book service   (live book, SSE)
-             └─ /trading/**    ─▶  trading-system        (positions off the fill stream, SSE)
+             ├─ /trading.js           the Trading tab's renderer, served here
+             ├─ /orderbook/**  ─▶  order book service   (live book, SSE — embedded whole)
+             └─ /trading/**    ─▶  trading-system        (JSON + SSE — drawn by the desk)
 ```
 
-Each tab is the real service's front end in an iframe, with its own topbar and status bar hidden
-(`?embed=1`) so the desk supplies the single surrounding chrome. Both tabs stay mounted, so a
-tab's live stream keeps running while the other is in view.
+The two tabs reach their services differently, because the services are different. The order book
+is a standalone public site with its own front end, so the desk embeds it in an iframe with its
+chrome hidden (`?embed=1`) and adds nothing. The trading service serves JSON and an SSE stream and
+no HTML at all, so the desk draws it: `trading.js` renders the snapshot that `/trading/api/stream`
+pushes. Both tabs stay mounted, so a tab's live stream keeps running while the other is in view.
 
-The proxy and the frame answer different questions, and the pair is deliberate. The proxy makes it
-one origin, which is what lets `frame-ancestors` stay `'self'` rather than being opened up to a
-second hostname. The frame is what keeps each tab the service's own front end: orderbook and
-trading-system stay independently deployed, each tab keeps its own SSE stream running while another
-is in view, a keystroke stays with the app being typed into rather than reaching the shell, and a
-child that fails renders a broken tab instead of a broken desk.
+Which one a service gets follows from whether its front end has a second audience. The order book's
+does — it is a demo people are sent a link to — and duplicating its renderer here would leave two
+copies of one screen to keep in step. The ledger's does not: nobody visits it directly, so its
+screen belongs where it is looked at, and the service is left owning the ledger rather than also
+owning a page.
+
+Embedding still buys the things it bought before, and only for the tab that uses it: orderbook stays
+independently deployed with its own release cycle, a keystroke stays with the app being typed into
+rather than reaching the shell, and a child that fails renders a broken tab instead of a broken desk.
+Proxying is what makes it one origin either way, which is what lets `frame-ancestors` stay `'self'`
+rather than being opened up to a second hostname.
 
 ## Routing and streaming
 
