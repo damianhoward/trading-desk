@@ -284,3 +284,226 @@ body {
 .prose p:last-child {
   margin-bottom: 0;
 }
+
+/* ---- Natively rendered views ------------------------------------------ */
+/* A view is a tab the desk draws itself rather than embedding. It sits in the same absolute
+   layer as an iframe so switching tabs is the same visibility toggle either way, and scrolls
+   inside itself — the body does not scroll, so the chrome stays put. */
+.view {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--bg-base);
+}
+
+.view.active {
+  display: flex;
+}
+
+/* The trading view came from a service that named these gain/loss; the shell's own palette calls
+   the same two colours bid/ask. Aliased rather than renamed so both vocabularies stay readable
+   where each belongs. */
+:root {
+  --gain: var(--bid);
+  --loss: var(--ask);
+}
+
+/* ---- Headline stats strip --------------------------------------------- */
+/* Full-bleed strip whose cells line up with the content grid's edge: the inline padding mirrors
+   .grid's centered max-width, so the first cell sits flush with the report panel below it. */
+.stats {
+  display: flex;
+  flex: none;
+  padding-inline: max(14px, calc((100% - 1600px) / 2 + 14px));
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--rule-bright);
+}
+
+.stat {
+  flex: 0 1 auto;
+  min-width: 96px;
+  padding: 9px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-right: 1px solid var(--rule);
+}
+
+.stat:first-child {
+  border-left: 1px solid var(--rule);
+}
+
+.stat .k {
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.stat .v {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.up::after {
+  content: " \25B2";
+  font-size: 9px;
+  color: var(--gain);
+}
+
+.down::after {
+  content: " \25BC";
+  font-size: 9px;
+  color: var(--loss);
+}
+
+/* ---- Content grid ------------------------------------------------------ */
+/* Wider than the standalone page this came from, and the side column grows with it rather than
+   staying pinned at 360px. A desk is looked at on a desk monitor: capping the whole workspace
+   narrow left the report stacked in one long column with the positions and exposure tables
+   squashed beside it, which is the worst of both. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+  align-content: start;
+  gap: 14px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 14px;
+  align-items: start;
+}
+
+/* The report is a wall of small tables, not a list: tile them to the width available so a
+   multi-symbol book stays on one screen instead of scrolling. The 1px gap over a ruled
+   background draws the hairlines between cells, in both directions, without each block having
+   to know which edge it sits on. */
+.blocks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+}
+
+.blocks .report-block {
+  border-bottom: none;
+  background: var(--bg-1);
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.phead .sub {
+  margin-left: auto;
+  letter-spacing: 0.08em;
+  color: var(--ink-4);
+}
+
+/* ---- Risk report / positions ------------------------------------------ */
+.report-block {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.report-block:last-child {
+  border-bottom: none;
+}
+
+.report-block h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+
+.report-block h3 .sub {
+  margin-left: auto;
+  color: var(--ink-4);
+}
+
+.valuation {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+table.risk {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.risk th,
+table.risk td {
+  padding: 3px 0;
+  text-align: right;
+}
+
+table.risk th:first-child,
+table.risk td:first-child {
+  text-align: left;
+  color: var(--ink-3);
+}
+
+table.risk thead th {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 5px;
+}
+
+.pos {
+  color: var(--gain);
+}
+
+.neg {
+  color: var(--loss);
+}
+
+.empty {
+  padding: 14px;
+  text-align: center;
+  color: var(--ink-4);
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    flex: 1 1 40%;
+  }
+}
+
+/* `hidden` has to win over the flex display above it: the attribute's user-agent rule is a bare
+   [hidden], so any author rule setting display beats it and the item stays on screen. Every
+   status item that hides itself does so through this. */
+.statusbar .sb-item[hidden] {
+  display: none;
+}
+
+/* Separate the inner columns. The right-aligned defaults above butt a symbol straight against
+   the next cell's text, which in the 360px side panel reads as one run-on word. */
+table.risk th + th,
+table.risk td + td {
+  padding-left: 10px;
+}

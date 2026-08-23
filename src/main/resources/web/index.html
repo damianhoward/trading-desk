@@ -32,18 +32,67 @@
     </header>
 
     <main class="workspace">
+      <!-- The order book is a standalone public demo with its own site, so the desk embeds it
+           rather than duplicating its renderer. The trading view below is the opposite case:
+           the ledger behind it serves data only, and this is the only place it is drawn. -->
       <iframe
         class="frame active"
         data-frame="orderbook"
         title="Order Book"
         src="/orderbook/?embed=1"
       ></iframe>
-      <iframe
-        class="frame"
-        data-frame="trading"
-        title="Trading"
-        src="/trading/?embed=1"
-      ></iframe>
+
+      <section class="view" data-frame="trading" aria-label="Trading">
+        <div class="stats">
+          <div class="stat">
+            <span class="k">Instruments</span
+            ><span class="v" id="st-instruments">&mdash;</span>
+          </div>
+          <div class="stat">
+            <span class="k">Gross Notional</span
+            ><span class="v" id="st-gross">&mdash;</span>
+          </div>
+          <div class="stat">
+            <span class="k">Book Value</span
+            ><span class="v" id="st-valuation">&mdash;</span>
+          </div>
+          <div class="stat">
+            <span class="k">Day PnL</span
+            ><span class="v" id="st-pnl">&mdash;</span>
+          </div>
+        </div>
+
+        <div class="grid">
+          <section class="panel report" aria-labelledby="report-heading">
+            <h2 class="phead" id="report-heading">
+              Risk Report
+              <span class="sub">Greeks &middot; VaR/ES &middot; PnL</span>
+            </h2>
+            <div id="report" class="blocks" aria-live="polite"></div>
+          </section>
+
+          <aside class="side">
+            <section class="panel" aria-labelledby="positions-heading">
+              <h2 class="phead" id="positions-heading">
+                Positions
+                <span class="sub">taker side of each fill</span>
+              </h2>
+              <div id="positions" aria-live="polite"></div>
+            </section>
+            <section class="panel" aria-labelledby="exposure-heading">
+              <h2 class="phead" id="exposure-heading">
+                Exposure
+                <span class="sub">detected, never prevented</span>
+              </h2>
+              <div id="exposure" aria-live="polite"></div>
+            </section>
+            <section class="panel" aria-labelledby="session-heading">
+              <h2 class="phead" id="session-heading">Session</h2>
+              <div id="session"></div>
+            </section>
+          </aside>
+        </div>
+      </section>
     </main>
 
     <footer class="statusbar">
@@ -52,6 +101,32 @@
         ><span id="connlbl2">connecting</span></span
       >
       <span class="sb-item" id="active-label">order book</span>
+
+      <!-- Shown only while the tab it belongs to is active: the status bar describes the view in
+           front of you, not every view that happens to be mounted. -->
+      <span class="sb-item" data-for="trading" hidden
+        >stream <span id="stream">connecting</span></span
+      >
+      <span class="sb-item" data-for="trading" hidden
+        >updates <span id="updates">0</span></span
+      >
+      <span class="sb-item" data-for="trading" hidden
+        >views <span id="sync">&mdash;</span></span
+      >
+      <span class="sb-item" data-for="trading" hidden
+        >mark <span id="mark-age">&mdash;</span></span
+      >
+      <!-- Suppressed until the count is nonzero: dead letters are rare and demand an operator's
+           eye, so the column exists only when it has something to say. -->
+      <span
+        class="sb-item"
+        data-for="trading"
+        data-suppressed="1"
+        id="dlt-item"
+        hidden
+        >dead letters <span id="dlt" class="neg">0</span></span
+      >
+
       <span class="grow"></span>
       <span class="sb-item tagline"
         >single origin &middot; SSE streamed through</span
@@ -69,5 +144,6 @@
     </footer>
 
     <script src="/app.js"></script>
+    <script src="/trading.js"></script>
   </body>
 </html>

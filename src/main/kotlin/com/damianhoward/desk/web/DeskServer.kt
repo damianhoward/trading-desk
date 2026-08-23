@@ -15,10 +15,13 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 /**
- * HTTP transport for the trading desk. Serves the shell UI (`/`, `/app.css`, `/app.js`) and hands
- * everything under a service tab prefix (`/orderbook`, `/trading`) to the [Gateway], which
- * proxies it to the matching upstream. Plumbing only — routing here, proxying in the gateway,
- * rendering in the browser. `/healthz` proves the desk process answers; `/readyz` (see [Readiness])
+ * HTTP transport for the trading desk. Serves the shell UI (`/`, `/app.css`, `/app.js`) and the
+ * Trading tab's renderer (`/trading.js`), and hands everything under a service tab prefix
+ * (`/orderbook`, `/trading`) to the [Gateway], which proxies it to the matching upstream. The two
+ * tabs reach their services differently on purpose: the order book is a standalone site and is
+ * embedded whole, while the ledger serves JSON only and is drawn here. Plumbing either way —
+ * routing here, proxying in the gateway, rendering in the browser. `/healthz` proves the desk
+ * process answers; `/readyz` (see [Readiness])
  * proves its upstreams are reachable, so a deploy whose tabs would 502 reads as not-ready.
  * `/metrics` publishes process-level facts only and never that upstream probe: see [ProcessMetrics]
  * for why a check worth running per probe is the wrong thing to run per scrape. JDK
@@ -65,8 +68,13 @@ class DeskServer(
     /** The port actually bound — differs from the requested one when 0 (ephemeral) was asked for. */
     val boundPort: Int get() = server.address.port
 
-    /** Stops accepting connections and shuts down the request pool this server created. */
+    /**
+     * Stops accepting connections and shuts down the request pool this server created. Safe on a
+     * server that never started: the shutdown hook runs whatever happened, and a failed bind would
+     * otherwise raise an uninitialised-property error that buries the bind error underneath it.
+     */
     fun stop() {
+        if (!::server.isInitialized) return
         server.stop(0)
         executor.shutdownNow()
     }
@@ -82,6 +90,9 @@ class DeskServer(
                 path == "/privacy" -> get(exchange) { respond(exchange, 200, "text/html; charset=utf-8", assets.privacyHtml) }
                 path == "/app.css" -> get(exchange) { respond(exchange, 200, "text/css; charset=utf-8", assets.appCss) }
                 path == "/app.js" -> get(exchange) { respond(exchange, 200, "text/javascript; charset=utf-8", assets.appJs) }
+                // Matched before the gateway, and safe to be: the tab prefix is `/trading` or
+                // `/trading/…`, so `/trading.js` was never a proxied path.
+                path == "/trading.js" -> get(exchange) { respond(exchange, 200, "text/javascript; charset=utf-8", assets.tradingJs) }
                 gateway.handles(path) -> gateway.forward(exchange)
                 else -> respond(exchange, 404, "text/plain", "not found")
             }

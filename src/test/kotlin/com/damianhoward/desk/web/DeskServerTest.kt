@@ -3,6 +3,7 @@ package com.damianhoward.desk.web
 import com.sun.net.httpserver.HttpExchange
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -125,6 +126,17 @@ class DeskServerTest {
         assertTrue(request("GET", "/").body().contains("TRADING DESK"))
         assertEquals("text/css; charset=utf-8", request("GET", "/app.css").headers().firstValue("Content-Type").get())
         assertEquals("text/javascript; charset=utf-8", request("GET", "/app.js").headers().firstValue("Content-Type").get())
+        assertEquals("text/javascript; charset=utf-8", request("GET", "/trading.js").headers().firstValue("Content-Type").get())
+    }
+
+    // `/trading` is a tab prefix and `/trading.js` is a shell asset. Only a whole path segment
+    // counts as the prefix, so the asset must be served here rather than proxied to the ledger.
+    @Test
+    fun `the trading renderer is served by the shell, not proxied to the ledger`() {
+        val response = request("GET", "/trading.js")
+        assertEquals(200, response.statusCode())
+        assertTrue(response.body().contains("/trading/api/stream"))
+        assertNull(gateway.forwarded, "the shell asset should never reach the gateway")
     }
 
     @Test
@@ -149,7 +161,7 @@ class DeskServerTest {
 
     @Test
     fun `HEAD answers every shell route with the GET's status and headers, minus the body`() {
-        for (path in listOf("/", "/healthz", "/readyz", "/privacy", "/app.css", "/app.js")) {
+        for (path in listOf("/", "/healthz", "/readyz", "/privacy", "/app.css", "/app.js", "/trading.js")) {
             val head = request("HEAD", path)
             assertEquals(request("GET", path).statusCode(), head.statusCode(), path)
             assertEquals("", head.body(), path)
