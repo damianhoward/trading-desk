@@ -3,7 +3,7 @@
 // no domain logic — each service stays a standalone, independently deployed app; this module
 // only routes to them (streaming SSE through untouched) and serves the shell chrome.
 plugins {
-    id 'com.damianhoward.kotlin-conventions' version '0.5.1'
+    id 'com.damianhoward.kotlin-conventions' version '0.5.2'
     id 'application'
 }
 
