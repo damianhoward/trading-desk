@@ -3,8 +3,7 @@
  * a service's own front end embedded through the gateway with its topbar/statusbar hidden
  * (?embed=1), or a view rendered here from the service's JSON; the rules below cover both, and the
  * ".view" block marks where the second starts. Terminal-style dark
- * UI, shared with orderbook / risk-engine / position-ledger — see the palette in
- * workspace-config/CLAUDE.md -> "Live demo look and feel". The tokens below are copied from
+ * UI, shared with orderbook / risk-engine / position-ledger. The tokens below are copied from
  * orderbook's app.css so the whole family reads as one product.
  */
 :root {
