@@ -1,0 +1,21 @@
+name: PR body
+
+# Calls the shared body scan, which rejects an attribution footer in a pull request body — text
+# the agent backend appends at creation, so it arrives without an author writing it.
+#
+# Separate from the CI caller rather than a job inside it, because the scan needs the `edited`
+# trigger: correcting a body raises no other event, so without it a corrected body could never
+# clear the check. Putting `edited` on `ci.yml` would run the whole build every time a title or
+# description was touched.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-body:
+    uses: damianhoward/.github/.github/workflows/pr-body-scan.yml@main
