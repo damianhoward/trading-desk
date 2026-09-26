@@ -17,7 +17,19 @@ application {
 
 dependencies {
     testImplementation deps.hamcrest
+    // Same version as the estate's other browser tests (risk-engine, orderbook, visitor-analytics).
+    testImplementation 'com.microsoft.playwright:playwright:1.61.0'
 }
+
+// Downloads the Chromium build DeskBrowserTest drives (a no-op when already present).
+// Wired into test so `check` is self-sufficient — no bespoke CI install step.
+tasks.register('installPlaywrightChromium', JavaExec) {
+    classpath = configurations.testRuntimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args 'install', '--with-deps', 'chromium'
+}
+
+test.dependsOn installPlaywrightChromium
 
 // Only the process entry point (DeskServerKt — main() binds the real port and blocks) is
 // excluded, like a Spring Boot Application / CLI MainKt. The rest — routing, the reverse
