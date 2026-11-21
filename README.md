@@ -68,6 +68,11 @@ cross-box) URLs in production.
 
 With the two services running on their default ports, open `http://localhost:8084`.
 
+The distribution carries its own Java runtime: a jlink image of the four JDK modules the gateway
+uses, plus `jcmd` and JFR and no compiler, linked from the JDK the tests ran on. The launcher
+prefers it over any `JAVA_HOME`. `check` fails if `jdeps` finds a module the image lacks, and starts
+the installed distribution on its own runtime and probes it before anything ships.
+
 ## Tests
 
 `ReverseProxy` is exercised over a loopback `HttpServer` upstream — prefix rewrite, query and body
