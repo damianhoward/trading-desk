@@ -19,3 +19,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  # The front end's lint tooling. Without this entry nothing moved it: eslint sat at 10.6.0 while
+  # its minimatch fell inside a denial-of-service advisory that the current release had fixed.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
