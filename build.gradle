@@ -3,9 +3,9 @@
 // no domain logic — each service stays a standalone, independently deployed app; this module
 // only routes to them (streaming SSE through untouched) and serves the shell chrome.
 plugins {
-    id 'com.damianhoward.kotlin-conventions' version '0.6.2'
+    id 'com.damianhoward.kotlin-conventions' version '0.7.0'
     id 'application'
-    id 'com.damianhoward.runtime-image' version '0.6.2'
+    id 'com.damianhoward.runtime-image' version '0.7.0'
 }
 
 group = 'com.damianhoward'
@@ -16,12 +16,11 @@ application {
     mainClass = 'com.damianhoward.desk.web.DeskServerKt'
 }
 
-// The release carries its own runtime (build-conventions' runtime-image): these modules plus jcmd
-// and JFR, linked from the build's JDK, which the launcher prefers over the unit's JAVA_HOME.
+// The release carries its own runtime (build-conventions' runtime-image), linked from the build's
+// JDK with the convention's module set, which the launcher prefers over the unit's JAVA_HOME.
 // java.net.http is the gateway's client to its upstreams. /readyz is not probed: it reports the
 // upstreams, which CI does not run.
 runtimeImage {
-    modules = ['java.base', 'java.management', 'java.net.http', 'jdk.httpserver']
     smokePaths = ['/', '/metrics', '/privacy']
 }
 
